@@ -1,0 +1,89 @@
+using System.Runtime.InteropServices;
+
+namespace PatternsLab.Problems.Prototype;
+
+/// <summary>
+    /// Prototype creates new objects by cloning an existing object instead of creating them from scratch.
+    ///Clone() creates a copy of the current object.
+    ///Shallow copy copies references, so nested objects can be shared.
+    ///Deep copy creates independent copies of nested objects
+/// </summary>
+
+public class Weapon
+{
+    public string Name { get; set; }
+    public int Damage { get; set; }
+}
+
+public abstract class Enemy
+{
+    private string _modelData;
+
+    public string Name { get; set; }
+    public int Health { get; set; }
+    public Weapon Weapon { get; set; }
+    public List<string> Abilities { get; set; } = new();
+    public string ModelId => _modelData;
+
+    protected Enemy()
+    {
+        Console.WriteLine("   ...loading 3D model (slow)...");
+        Thread.Sleep(500);
+        _modelData = "MODEL_" + Guid.NewGuid().ToString("N")[..6];
+    }
+
+    // Copy constructor for Prototype
+    protected Enemy(Enemy source)
+    {
+        _modelData = source._modelData;
+        Name = source.Name;
+        Health = source.Health;
+
+        // Deep copy of Weapon
+        Weapon = new Weapon
+        {
+            Name = source.Weapon.Name,
+            Damage = source.Weapon.Damage
+        };
+
+        // Deep copy of Abilities
+        Abilities = new List<string>(source.Abilities);
+    }
+    public abstract Enemy Clone();
+}
+
+public class Orc : Enemy
+{
+    public Orc()
+    {
+        Name = "Orc";
+        Health = 100;
+        Weapon = new Weapon { Name = "Axe", Damage = 25 };
+        Abilities.Add("Rage");
+    }
+    private Orc(Orc source) : base(source)
+    {
+    }
+    public override Enemy Clone()
+    {
+        return new Orc(this);
+    }
+}
+
+public class Elf : Enemy
+{
+    public Elf()
+    {
+        Name = "Elf";
+        Health = 70;
+        Weapon = new Weapon { Name = "Bow", Damage = 18 };
+        Abilities.Add("Stealth");
+    }
+    private Elf(Elf source) : base(source)
+    {
+    }
+    public override Enemy Clone()
+    {
+        return new Elf(this);
+    }
+}
